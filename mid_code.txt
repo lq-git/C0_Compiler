@@ -1,0 +1,6 @@
+INT num
+FUNC VOID main
+INT i
+i = 3
+num = 4
+END

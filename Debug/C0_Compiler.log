@@ -1,0 +1,94 @@
+﻿  mid_code.c
+d:\projects\compiler\c0_compiler\c0_compiler\mid_code.c(49): warning C4013: “error”未定义；假设外部返回 int
+d:\projects\compiler\c0_compiler\c0_compiler\mid_code.c(57): warning C4013: “strcpy”未定义；假设外部返回 int
+d:\projects\compiler\c0_compiler\c0_compiler\mid_code.c(68): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 参见“sprintf”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\mid_code.c(74): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 参见“sprintf”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\mid_code.c(80): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 参见“sprintf”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\mid_code.c(86): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(205): note: 参见“fopen”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\mid_code.c(97): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(205): note: 参见“fopen”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\mid_code.c(163): warning C4013: “strcmp”未定义；假设外部返回 int
+  main.c
+d:\projects\compiler\c0_compiler\c0_compiler\main.c(18): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(205): note: 参见“fopen”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\main.c(22): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(205): note: 参见“fopen”的声明
+  lex.c
+d:\projects\compiler\c0_compiler\c0_compiler\lex.c(41): warning C4013: “strlen”未定义；假设外部返回 int
+d:\projects\compiler\c0_compiler\c0_compiler\lex.c(57): warning C4013: “strcpy”未定义；假设外部返回 int
+d:\projects\compiler\c0_compiler\c0_compiler\lex.c(231): warning C4244: “return”: 从“__int64”转换到“int”，可能丢失数据
+d:\projects\compiler\c0_compiler\c0_compiler\lex.c(322): warning C4129: “(”: 不可识别的字符转义序列
+d:\projects\compiler\c0_compiler\c0_compiler\lex.c(411): warning C4013: “strcmp”未定义；假设外部返回 int
+  grammer.c
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(67): warning C4013: “strcmp”未定义；假设外部返回 int
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(86): warning C4013: “strcpy”未定义；假设外部返回 int
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(388): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(408): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(420): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(387): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 参见“sprintf”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(407): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 参见“sprintf”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(419): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 参见“sprintf”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(475): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(480): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(550): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(566): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(635): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(666): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(737): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(740): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(806): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(809): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(825): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(828): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(823): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 参见“sprintf”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(915): warning C4013: “init_var_num”未定义；假设外部返回 int
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1073): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1079): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1147): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1184): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1194): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1249): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1316): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1340): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1349): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1373): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1375): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1314): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 参见“sprintf”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1415): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1454): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1489): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1507): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1549): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1616): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1619): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1671): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1674): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1682): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1707): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1710): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1744): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1760): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1764): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1798): warning C4090: “函数”: 不同的“const”限定符
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1956): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 参见“sprintf”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1972): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 参见“sprintf”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(1999): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 参见“sprintf”的声明
+d:\projects\compiler\c0_compiler\c0_compiler\grammer.c(2009): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 参见“sprintf”的声明
+  error.c
+d:\projects\compiler\c0_compiler\c0_compiler\error.c(256): warning C4013: “insymbol”未定义；假设外部返回 int
+  正在生成代码...
+  C0_Compiler.vcxproj -> D:\Projects\Compiler\C0_Compiler\Debug\C0_Compiler.exe
+  C0_Compiler.vcxproj -> D:\Projects\Compiler\C0_Compiler\Debug\C0_Compiler.pdb (Full PDB)

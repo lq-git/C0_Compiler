@@ -1,0 +1,8 @@
+int num;
+
+void main()
+{
+    int i;
+    i=3;
+    num=4;
+}
