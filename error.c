@@ -250,9 +250,81 @@ void error(int error_type, int line_index) {
 	return;
 }
 
-void error_deal_ingrammerexpr()
+void to_next_comma_semi()
 {
 	do {
 		symbol = insymbol();
-	} while (symbol != SEMISY && symbol != ASSIGNSY && symbol != PLUSSY && symbol != MINUSSY && symbol != STARSY && symbol != DIVSY && symbol != RPARSY && symbol != COMMASY && symbol != LTSY && symbol != LESY && symbol != GTRSY && symbol != GTESY && symbol != EQUSY && symbol != NEQSY);
+	} while (symbol != COMMASY && symbol != SEMISY);
+}
+
+void to_next_semi()
+{
+	do {
+		symbol = insymbol();
+	} while (symbol != SEMISY);
+}
+
+void to_next_int_char_void()
+{
+	do {
+		symbol = insymbol();
+	} while (symbol != INTSY && symbol != CHARSY && symbol != VOIDSY);
+}
+
+void to_next_rpar()
+{
+	do {
+		symbol = insymbol();
+	} while (symbol != RPARSY);
+}
+
+void to_next_rbras()
+{
+	do {
+		symbol = insymbol();
+	} while (symbol != RBRASSY);
+}
+
+void to_next_lbras()
+{
+	do {
+		symbol = insymbol();
+	} while (symbol != LBRASSY);
+}
+
+void to_next_int_char_state_nolbras() 
+{
+	do {
+		symbol = insymbol();
+	} while (symbol != INTSY && symbol != CHARSY && symbol != IFSY && symbol != DOSY && symbol != SWISY&& symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != RTSY);
+}
+
+void to_next_state()
+{
+	do {
+		symbol = insymbol();
+	} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != RTSY);
+}
+
+void to_next_state_semi_nolbras()
+{
+	do {
+		symbol = insymbol();
+	} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != RTSY&&symbol != SEMISY);
+}
+
+void to_next_state_case_colon()
+{
+	do {
+		symbol = insymbol();
+	} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY &&symbol != IDSY &&
+		symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY&&symbol != COLONSY&&symbol != CASESY);
+}
+
+void to_next_state_case()
+{
+	do {
+		symbol = insymbol();
+	} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY &&symbol != IDSY &&
+		symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY && symbol != CASESY);
 }

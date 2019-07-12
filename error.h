@@ -1,2 +1,12 @@
 extern void error(int error_type, int line_index);
-extern void error_deal_ingrammerexpr();
+extern void to_next_comma_semi();
+extern void to_next_semi();
+extern void to_next_int_char_void();
+extern void to_next_rpar();
+extern void to_next_rbras();
+extern void to_next_lbras();
+extern void to_next_int_char_state_nolbras();
+extern void to_next_state();
+extern void to_next_state_semi_nolbras();
+extern void to_next_state_case_colon();
+extern void to_next_state_case();

@@ -1,6 +1,6 @@
 #define MAX_MID_CODE 1024
 
-//中间代码的结构体设计
+/*---中间代码的结构体设计---*/
 struct mid_code {
 	int op;
 	char src1[100];

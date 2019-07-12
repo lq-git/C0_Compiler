@@ -8,14 +8,16 @@
 #include "error.h"
 
 int symbol;                   //读入的单词类型号
-							  //特殊设计的全局变量
-							  //1.保存现场用的
+              /*---特殊设计的全局变量---*/
+
+/*---1.保存现场用的---*/
 int pre_symbol;               //暂时记录symbol
 char pre_ch;                  //暂时记录CHAR
 int pre_line_index;           //暂时记录index_in_line
 char PRETOKEN[100];           //用于在特殊时刻暂时记录TOKEN的值
-							  //2.填符号表用的全局变量
-							  //(0)公用的
+
+/*---2.填符号表用的全局变量---*/
+/*---(0)公用的---*/
 int address = 0;              //相对于当前AR的偏移地址
 char TEMP[100];
 int array_flag = 0;           //标识符是不是数组
@@ -23,7 +25,8 @@ int var_flag = 0;
 int const_flag = 0;
 int para_flag = 0;
 int global_flag = 0;          //当前的变量或者常量是不是全局的
-							  //(1)函数声明和调用中需要的
+
+/*---(1)函数声明和调用中需要的---*/
 int type_symbol;              //在函数声明中记录函数的type
 char func_name[100];          //记录函数名称，供填表和参数表应用
 int para_num;                 //记录函数的参数个数，填表用
@@ -31,7 +34,8 @@ int rt_flag;                  //检查有返回值函数是不是有return语句
 int main_flag = 0;            //在处理RT语句时，如果是main，直接退出
 int void_flag = 0;
 int val_flag = 0;
-//(2)变量声明中需要的
+
+/*---(2)变量声明中需要的---*/
 char name_of_id[100];         //用于记录标识符的名字(包括常量和变量的名字)
 int var_type;                 //变量定义中记录变量的类型 或者 参数的类型
 int var_array_size;           //变量定义中记录数组变量的大小 变量声明中需要的
@@ -39,7 +43,9 @@ int const_type;               //常量定义中记录常量的类型
 int const_value;              //常量定义中记录常量的值 表达式等需要的
 int rela_op_symbol;           //关系运算符的symbol值
 int factor_type = 0;          //记录当前factor的类型
+
 char now_result[100];
+int var_index;                //查询变量类型时记录变量在符号表中的位置，便于下次查询变量值时使用
 
 struct table Table;
 struct table new_Table;
@@ -51,10 +57,15 @@ void initial_table() {
 	Table.list_index = -1;
 }
 
-/*---加入符号表，在加入时查重---*/
+/*
+---加入符号表，在加入时查重
+---符号表已满 处理方式：报错后直接退出程序
+---遇到重复变量或函数 处理方式：报错但不加入符号表
+*/
 void append_to_table(char name[], int kind, int type, int value, int size, int in_address) {
 	int index, func_index;
 	if (Table.list_index >= (MAXLIST - 1)) {
+		//若符号表已满，报错后直接退出程序
 		error(OUT_OF_TABLE_ERROR, line);
 		fclose(compile_file);
 		fclose(output_file);
@@ -65,7 +76,7 @@ void append_to_table(char name[], int kind, int type, int value, int size, int i
 		for (index = 0; index<Table.num_of_func; index++) {
 			func_index = Table.index_of_func[index];
 			if (strcmp(Table.List[func_index].name, name) == 0) {
-				error(FUNC_REDEF_ERROR, line);//函数名字重复
+				error(FUNC_REDEF_ERROR, line);//函数名字重复，报错不加入符号表
 				return;
 			}
 		}
@@ -77,7 +88,7 @@ void append_to_table(char name[], int kind, int type, int value, int size, int i
 		func_index = Table.index_of_func[Table.num_of_func - 1];
 		for (index = func_index; index <= Table.list_index; index++) {
 			if (strcmp(Table.List[index].name, name) == 0) {
-				error(VAR_REDEF_ERROR, line);//变量或常量同层有重名
+				error(VAR_REDEF_ERROR, line);//变量或常量同层有重名，报错后不加入符号表
 				return;
 			}
 		}
@@ -100,9 +111,10 @@ void append_para(int num) {
 
 /*
 ---查询ID类型，并设置全局flag
----函数返回其在符号表中的索引，其余返回标识符类型
+---依据标识符名返回标识符类型
+---如查不到该标识符 处理方式：报错后返回-1 （返回-1后的处理方式）
 */
-int index_in_table(char name[], int kind) {
+int get_type_by_name(char name[], int kind) {
 	int i, index, first_func_index;
 	array_flag = 0;
 	var_flag = 0;
@@ -120,16 +132,8 @@ int index_in_table(char name[], int kind) {
 			return -1;
 		}
 		else {
-			index = Table.index_of_func[i];//找到了该函数 
-										   /*??????????????????????????????????????????????????????????????????*/
-										   //在调用函数时，查找函数是否在符号表中，并核对实参与形参数目是否相同
-										   //实参数目即为para_num，在执行函数调用处理时初始化为0
-			if (Table.List[index].size != para_num) {
-				error(PARA_NUM_ERROR, line);
-				return index;
-			}
-			/*??????????????????????????????????????????????????????????????????*/
-			return index;
+			var_index = index;
+			return Table.List[index].type;//返回函数类型
 		}
 	}
 	else { //普通标识符
@@ -145,48 +149,39 @@ int index_in_table(char name[], int kind) {
 				if (strcmp(name, Table.List[index].name) == 0)
 					break;
 			}
+			//全局变量层也找不到
 			if (index == first_func_index) {
 				error(ID_NO_DEF_ERROR, line);
 				printf("wrong: %s\n", name);
 				return -1;
 			}
-			global_flag = 1;
-			if (Table.List[index].kind == 1) {
-				if (Table.List[index].size != -1)
-					array_flag = 1;
-				else
-					var_flag = 1;
-				return Table.List[index].type;
-			}
-			else if (Table.List[index].kind == 0) {
-				const_flag = 1;
-				return Table.List[index].type;
-			}
-			else if (Table.List[index].kind == 3) {
-				para_flag = 1;
-				return Table.List[index].type;
-			}
+			global_flag = 1;//全局变量层找到后置为1
 		}
-		else { //本层找到
-			if (Table.List[index].kind == 1) {
-				if (Table.List[index].size != -1)
-					array_flag = 1;
-				else
-					var_flag = 1;
-				return Table.List[index].type;
+		//变量在全局变量层或局部变量层找到后
+		var_index = index;
+		if (Table.List[index].kind == 1) {
+			if (Table.List[index].size != -1){
+				array_flag = 1;
 			}
-			else if (Table.List[index].kind == 0) {
-				const_flag = 1;
-				return Table.List[index].type;
+			else{
+				var_flag = 1;
 			}
-			else if (Table.List[index].kind == 3) {
-				para_flag = 1;
-				return Table.List[index].type;
-			}
+			return Table.List[index].type;
+		}
+		else if (Table.List[index].kind == 0) {
+			const_flag = 1;
+			return Table.List[index].type;
+		}
+		else if (Table.List[index].kind == 3) {
+			para_flag = 1;
+			return Table.List[index].type;
 		}
 	}
 	return 0;
 }
+
+//在调用函数时，查找函数是否在符号表中，并核对实参与形参数目是否相同
+//实参数目即为para_num，在执行函数调用处理时初始化为0
 
 /*---以函数名为条件在符号表中查询其类型并返回---*/
 int get_func_type(char name[]) {
@@ -205,7 +200,23 @@ int get_func_type(char name[]) {
 	}
 }
 
-/*---查询常量值，注意char类型常量存储其ASCII码---*/
+/*
+---判断函数实参与形参是否相同
+---若不相同 处理方式：报错后返回
+*/
+int is_correct_para(int index) {
+	if (Table.List[index].size != para_num) {
+		error(PARA_NUM_ERROR, line);
+		return -1;
+	}
+	return 1;
+}
+
+/*
+---查询常量值
+---注意char类型常量存储其ASCII码
+---此时已确定该变量为常量
+*/
 int get_const_value(char name[]) {
 	int index, first_func_index;
 	index = Table.index_of_func[Table.num_of_func - 1];
@@ -233,10 +244,24 @@ int get_const_value(char name[]) {
 }
 
 /*
+---查询常量值
+---注意char类型常量存储其ASCII码
+---此时已确定该变量为常量
+*/
+int get_const_value1() {
+	return Table.List[var_index].value;
+}
+
+/*
 ---主处理程序
 ---常量声明并定义，在常量定义模块循环
 ---函数声明并定义
 ---变量声明无变量定义
+---函数/变量说明时的错误
+---1.标识符定义错误：不加入符号表，继续读取到下一个函数或者变量声明
+---2.变量说明不以;结尾
+---3.标识符后是非法字符
+---处理方式：报错后继续读取到下一个函数或者变量声明
 ---必须遵循顺序：常量定义-->变量声明（包括函数声明）
 */
 void program() {
@@ -255,9 +280,7 @@ void program() {
 		symbol = insymbol();
 		if (symbol != IDSY) {
 			error(ID_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != INTSY && symbol != CHARSY && symbol != VOIDSY);
+			to_next_int_char_void();//标识符定义错误 读取到下一个函数或者变量声明
 			continue;
 		}
 		//检测下一个单词，从而判别是变量还是函数(函数对应的是小括号)
@@ -277,9 +300,7 @@ void program() {
 			var_def();//变量声明
 			if (symbol != SEMISY) {
 				error(SEMI_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != INTSY && symbol != CHARSY && symbol != VOIDSY);        //跳到下一个函数或者变量声明
+				to_next_int_char_void();//跳到下一个函数或者变量声明
 				continue;
 			}
 			else {
@@ -289,9 +310,7 @@ void program() {
 		else {
 			//这里应该输出错误信息：标识符后面的字符错误(非法声明)，并skip到下一个int、char、void
 			error(ID_DEC_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != INTSY && symbol != CHARSY && symbol != VOIDSY);//跳到下一个函数或者变量声明
+			to_next_int_char_void();//跳到下一个函数或者变量声明
 			continue;
 		}
 	}
@@ -299,6 +318,7 @@ void program() {
 	//函数说明部分
 	while (symbol == INTSY || symbol == CHARSY || symbol == VOIDSY) {
 		if (symbol == INTSY || symbol == CHARSY) {
+
 			val_func_def();//有返回值函数定义
 		}
 		else {
@@ -329,8 +349,10 @@ void program() {
 }
 
 /*
----常量说明
+---常量说明 const type ID=_;
 ---常量声明立即定义
+---会遇到的错误：不以';'结束
+---处理方式：报错后继续读取到包括const、int、char的所有语句列
 */
 void const_dec() {
 	while (symbol == CONSY) {
@@ -354,6 +376,14 @@ void const_dec() {
 /*
 ---常量定义部分
 ---char 类型记录的值为其ASCII码
+---会遇到的错误：
+---1.常量定义类型不匹配错误；
+---2.在整数中，+-号后面的不是无符号整数；
+---3.在常量定义中，应该是等号的位置不是等号；
+---4.标识符定义错误;
+---处理方式：不加入符号表，继续读取，直至读到','|';' 也就是下一个常量定义或句子结束
+---5.常量声明中，常量的类型标识符不是int或char
+---处理方式：不加入符号表，继续读取，直至读到;' 也就是句子结束
 */
 void const_def() {
 	int sign = 1;//1:+ 0:-
@@ -371,10 +401,8 @@ void const_def() {
 						symbol = insymbol();
 						if (symbol == DIGITSY && const_type == INTSY) {
 							if (trans_num == 0) {
-								error(AFTER_OP_DIGIT_ERROR, line);
-								do {
-									symbol = insymbol();
-								} while (symbol != COMMASY && symbol != SEMISY);
+								error(AFTER_OP_DIGIT_ERROR, line);//在整数中，+-号后面的不是无符号整数
+								to_next_comma_semi();
 								continue;
 							}
 							if (sign == 1)
@@ -392,9 +420,7 @@ void const_def() {
 						}
 						else {
 							error(CONST_DEF_TYPE_ERROR, line);
-							do {
-								symbol = insymbol();
-							} while (symbol != COMMASY && symbol != SEMISY);
+							to_next_comma_semi();
 							continue;
 						}
 					}
@@ -413,7 +439,7 @@ void const_def() {
 					else if (symbol == CHAR2SY && const_type == CHARSY) {
 						sign = 1;
 						const_value = TOKEN[1];//char 记录的是ASCII码
-											   //填表，生成四元式
+						//填表，生成四元式
 						address = address + 1;
 						append_to_table(name_of_id, 0, 2, const_value, -1, address);
 						sprintf(TEMP, "%d", const_value);
@@ -423,26 +449,20 @@ void const_def() {
 						//printf("This is a char!\n");
 					}
 					else {
-						error(CONST_DEF_TYPE_ERROR, line);
-						do {
-							symbol = insymbol();
-						} while (symbol != COMMASY && symbol != SEMISY);
+						error(CONST_DEF_TYPE_ERROR, line);//常量定义类型错误
+						to_next_comma_semi();
 						continue;
 					}
 				}
 				else {
-					error(CONST_DEF_ASSIGN_ERROR, line);
-					do {
-						symbol = insymbol();
-					} while (symbol != COMMASY && symbol != SEMISY);//如果没有=
+					error(CONST_DEF_ASSIGN_ERROR, line);//在常量定义中，应该是等号的位置不是等号
+					to_next_comma_semi();
 					continue;
 				}
 			}
 			else {
-				error(ID_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != COMMASY && symbol != SEMISY);
+				error(ID_ERROR, line);//标识符定义错误
+				to_next_comma_semi();
 				continue;//如果不是标识符，就就继续读入 直到,或者;
 			}
 		} while (symbol == COMMASY);//处理完一个常量赋值语句
@@ -452,21 +472,31 @@ void const_def() {
 	}
 	else {
 		error(CONST_DEC_TYPE_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != SEMISY);
+		to_next_semi();
 		return;
 	}
 }
 
 /*
 ---有返回值函数定义
+---会遇到的错误：
+---会遇到的错误：
+---1.标识符非法定义；
+---2.标识符后不是(；
+---3.)缺失；
+---4.)后不是{;
+---处理方式：报错后继续读入，直到},也就是直接跳过此函数处理下一函数
+---5.函数形参标识符非法定义；
+---处理方式：报错后继续读入，直到)，也就是直接跳过形参定义
+---6.}缺失；
+---处理方式：报错后继续读入，直到int|char|void，也就是读入下一函数
+---7.缺失return 处理方式:报错
 ---*/
 void val_func_def() {
 	type_symbol = symbol;
 	rt_flag = 0;
 	dec_head();//函数定义类型+名称处理
-	if (symbol == LPARSY) {
+	if (symbol == LPARSY) {//再次检查的原因：进入函数定义模块后，会有多个函数定义
 		//标明有返回值函数
 		val_flag = 1;
 		void_flag = 0;
@@ -501,35 +531,27 @@ void val_func_def() {
 				}
 				else {
 					error(RBRAS_ERROR, line);
-					do {
-						symbol = insymbol();
-					} while (symbol != VOIDSY && symbol != INTSY && symbol != CHARSY);
+					to_next_int_char_void();
 					return;
 				}
 			}
 			else {
 				error(LBRAS_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != RBRASSY);//一旦出错，直接跳过此函数
+				to_next_rbras();//一旦出错，直接跳过此函数
 				symbol = insymbol();
 				return;
 			}
 		}
 		else {
 			error(RPAR_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != RBRASSY);
+			to_next_rbras();
 			symbol = insymbol();
 			return;
 		}
 	}
 	else {
 		error(LPAR_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != RBRASSY);
+		to_next_rbras();
 		symbol = insymbol();
 		return;
 	}
@@ -537,7 +559,17 @@ void val_func_def() {
 
 /*
 ---无返回值函数定义
----函数的结束语句存在问题
+---会遇到的错误：
+---1.标识符非法定义；
+---2.标识符后不是(；
+---3.)缺失；
+---4.)后不是{;
+---处理方式：报错后继续读入，直到},也就是直接跳过此函数处理下一函数
+---5.函数形参标识符非法定义；
+---处理方式：报错后继续读入，直到)，也就是直接跳过形参定义
+---6.}缺失；
+---处理方式：报错后继续读入，直到int|char|void，也就是读入下一函数
+--------------------函数的结束语句存在问题----------------------------
 */
 void void_func_def() {
 	type_symbol = VOIDSY;
@@ -571,44 +603,34 @@ void void_func_def() {
 					}
 					else {
 						error(RBRAS_ERROR, line);
-						do {
-							symbol = insymbol();
-						} while (symbol != VOIDSY && symbol != INTSY && symbol != CHARSY);
+						to_next_int_char_void();
 						return;
 					}
 				}
 				else {
 					error(LBRAS_ERROR, line);
-					do {
-						symbol = insymbol();
-					} while (symbol != RBRASSY);
+					to_next_rbras();
 					symbol = insymbol();
 					return;
 				}
 			}
 			else {
 				error(RPAR_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != RBRASSY);
+				to_next_rbras();
 				symbol = insymbol();
 				return;
 			}
 		}
 		else {
 			error(LPAR_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != RBRASSY);
+			to_next_rbras();
 			symbol = insymbol();
 			return;
 		}
 	}
 	else {
 		error(ID_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != RBRASSY);
+		to_next_rbras();
 		symbol = insymbol();
 		return;
 	}
@@ -618,11 +640,22 @@ void void_func_def() {
 ---主函数定义部分
 ---只支持void main()
 ---主函数生成四元式时与其他函数并无区别
+---会遇到的错误：
+---1.缺失(、)；
+---处理方式：读取到{，也就是跳到主函数开始执行；
+---2.缺失{；
+---处理方式：结束主函数（有点不妥）
+------------------错误处理需要改进----------------------
 */
 void main_func() {
+	/*
+	*有待改进
+	*出现了int main()提示标识符错误
+	*不会出现那NOT_VOID_MAIN_ERROR错误
+	*/
 	if (symbol != VOIDSY) {
 		error(NOT_VOID_MAIN_ERROR, line);
-		return;//跳的多么？
+		return;
 	}
 	symbol = insymbol();
 	if (symbol == MAINSY) {
@@ -639,18 +672,14 @@ void main_func() {
 		symbol = insymbol();
 		if (symbol != LPARSY) {
 			error(LPAR_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != LBRASSY);//跳到主函数开始初执行
+			to_next_lbras();//跳到主函数开始初执行
 		}
 		else {
 			symbol = insymbol();
 		}
 		if (symbol != RPARSY) {
 			error(RPAR_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != LBRASSY);//跳到主函数开始初执行，万一没有{呢
+			to_next_lbras();/*---------跳到主函数开始初执行，万一没有{呢---------*/
 		}
 		else {
 			symbol = insymbol();
@@ -662,8 +691,6 @@ void main_func() {
 		symbol = insymbol();
 		comp_state();
 		if (symbol == RBRASSY) {
-			//生成四元式：函数的结束语句
-			generate_mid_code(34, CODE_EMPTY, CODE_EMPTY, CODE_EMPTY);
 			fprintf(output_file, "This is a main function defination!\n");
 			//sprintf("This is a main function defination!\n");
 			return;
@@ -675,7 +702,7 @@ void main_func() {
 	}
 	else {
 		error(MAINSY_ERROR, line);
-		return;//跳的多么？
+		return;//根本不会出现这种错误
 	}
 }
 
@@ -694,7 +721,7 @@ void dec_head() {
 	if (symbol == IDSY) {
 		strcpy(func_name, TOKEN);
 		address = 0;//每一函数定义时address置0
-					//将函数的类型+名称填表
+		//将函数的类型+名称填表
 		append_to_table(func_name, 2, real_type, 0, 0, address);
 		symbol = insymbol();
 		fprintf(output_file, "This is a defination head!\n");
@@ -743,9 +770,7 @@ void para_list() {
 			}
 			else {
 				error(ID_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != RPARSY);
+				to_next_rpar();
 				return;
 			}
 		}
@@ -756,19 +781,19 @@ void para_list() {
 }
 
 /*
----变量说明模块
+---变量说明模块（用于局部变量说明）
 ---调用var_dec()循环处理变量声明
 ---只有变量声明无定义
 ---数组变量加入符号表时，存储其偏移地址为其基地址+数组长度
+---句子结束没有; 
+---处理方式：继续读入，直至出现int char 或者if以及其他语句（注意不包括{}）
 */
 void var_dec() {
 	while (symbol == INTSY || symbol == CHARSY) {
 		var_def();
 		if (symbol != SEMISY) {
 			error(SEMI_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != INTSY && symbol != CHARSY /*&& symbol != VOIDSY*/ && symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != RTSY);        //跳到下一句变量声明或者语句列
+			to_next_int_char_state_nolbras();
 		}
 		else {
 			symbol = insymbol();
@@ -779,9 +804,14 @@ void var_dec() {
 }
 
 /*
----变量说明模块
+---变量说明模块（用于全局变量说明和局部变量说明）
 ---只有变量声明无定义
 ---数组变量加入符号表时，存储其偏移地址为其基地址+数组长度
+---变量说明模块期间的错误：
+---1.标识符定义错误（包括本身不是标识符和标识符后紧接的）
+---2.右中括号不匹配错误(数组声明）
+---3.数组的长度不是无符号整数（数组声明）
+---处理方式：报错后，读取到下一个变量声明或句子
 */
 void var_def() {
 	int real_type;
@@ -831,46 +861,36 @@ void var_def() {
 						}
 						else {
 							error(RBRA_ERROR, line);//不是右中括号
-							do {
-								symbol = insymbol();
-							} while (symbol != COMMASY && symbol != SEMISY);
+							to_next_comma_semi();
 							continue;
 						}
 					}
 					else {
-						error(VAR_DEF_ARRAYINDEX_ERROR, line); //0不是无符号整数
-						do {
-							symbol = insymbol();
-						} while (symbol != COMMASY && symbol != SEMISY);
+						error(VAR_DEF_ARRAYINDEX_ERROR, line); //数组的长度不是无符号整数
+						to_next_comma_semi();
 						continue;
 					}
 				}
 				else {
-					error(VAR_DEF_ARRAYINDEX_ERROR, line);
-					do {
-						symbol = insymbol();
-					} while (symbol != COMMASY && symbol != SEMISY);
+					error(VAR_DEF_ARRAYINDEX_ERROR, line);//数组的长度不是无符号整数
+					to_next_comma_semi();
 					continue;
 				}
 			}
 			else {
 				error(ID_DEC_ERROR, line);//变量声明错误
-				do {
-					symbol = insymbol();
-				} while (symbol != COMMASY && symbol != SEMISY);
+				to_next_comma_semi();
 				continue;
 			}
 		}
 		else {
 			error(ID_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != COMMASY && symbol != SEMISY);
+			to_next_comma_semi();
 			continue;
 		}
 	} while (symbol == COMMASY);
 	fprintf(output_file, "This is a variable defination!\n");
-	printf("This is a variable defination!\n");
+	//printf("This is a variable defination!\n");
 }
 
 /*
@@ -909,6 +929,13 @@ void state_list() {
 ---语句处理
 ---识别各种语句并进入相应语句处理
 ---条件语句|循环语句|情况语句|{语句列}|有返回值函数调用;|无返回值函数调用;|赋值语句;|读语句;|写语句;|空;|返回语句;
+---{}会遇到的错误：} 丢失 处理方式：继续读入直至state（不包含{}）
+---函数调用或赋值会遇到的错误：
+---1.标识符后非合法定义的字符；
+---2.句子结束但;缺失；
+---3.函数未定义；
+---处理方式：报错后继续读入直至下一个state（不包含{}）；
+
 */
 void state() {
 	int func_type;
@@ -930,9 +957,7 @@ void state() {
 		}
 		else {
 			error(RBRAS_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_semi_nolbras();
 			return;
 		}
 	}
@@ -949,7 +974,7 @@ void state() {
 			CHAR = pre_ch;
 			index_in_line = pre_line_index;
 			symbol = pre_symbol;//先一并处理了
-			func_type = get_func_type(TOKEN);
+			func_type = get_type_by_name(TOKEN, 2);
 			//查表，确认是哪种函数，暂时都写成这样
 			if (func_type == 0) {
 				void_fun_call();//无返回值函数调用处理
@@ -958,10 +983,7 @@ void state() {
 				val_fun_call();
 			}
 			else {
-				error(FUNC_NO_DEF_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+				to_next_state_semi_nolbras();
 				return;
 			}
 			if (symbol == SEMISY) {
@@ -972,9 +994,7 @@ void state() {
 			}
 			else {
 				error(SEMI_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+				to_next_state_semi_nolbras();
 				return;
 			}
 		}
@@ -992,17 +1012,13 @@ void state() {
 			}
 			else {
 				error(SEMI_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+				to_next_state_semi_nolbras();
 				return;
 			}
 		}
 		else {
 			error(STATE_AFTER_ID_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_semi_nolbras();
 			return;
 		}
 	}
@@ -1060,6 +1076,10 @@ void state() {
 ---先设置标签，并在{}之前设置当不成立时，跳到标签处执行；
 ---继续分析{}内语句，分析完后回填label；
 ---只有if无else。
+---会遇到的错误：
+---1.if后无(；
+---2.缺失)；
+---处理方式：继续读取，直至下一个语句state出现
 */
 void if_state() {
 	char label[100];
@@ -1083,17 +1103,13 @@ void if_state() {
 		}
 		else {
 			error(RPAR_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state();
 			return;
 		}
 	}
 	else {
 		error(LPAR_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+		to_next_state();
 		return;
 	}
 }
@@ -1106,12 +1122,15 @@ void if_state() {
 void condition() {
 	char num1[100];
 	char num2[100];
+	int op_flag;//判断关系运算符是否合法
 	strcpy(num1, CODE_EMPTY);
 	strcpy(num2, CODE_EMPTY);
 	expr();
 	strcpy(num1, now_result);
 	if (symbol == EQUSY || symbol == LTSY || symbol == LESY || symbol == GTRSY || symbol == GTESY || symbol == NEQSY) {
-		rela_op();//关系运算符处理，感觉没必要 就是保存symbol值
+		op_flag=rela_op();//关系运算符处理，感觉没必要 就是保存symbol值
+		if (op_flag == -1)
+			return;
 		expr();
 		strcpy(num2, now_result);
 		generate_temp_var(now_result);
@@ -1155,20 +1174,21 @@ void condition() {
 /*
 ---关系运算符处理
 ---rela_op_symbol中存放关系运算符类型
+---会遇到的错误：非法关系运算符定义,
+---错误处理：报错后继续读取,直至出现 ) 且返回-1通知condition此处有问题
 */
-void rela_op() {
+int rela_op() {
 	if (symbol == EQUSY || symbol == GTRSY || symbol == GTESY || symbol == LTSY || symbol == LESY || symbol == NEQSY) {
 		rela_op_symbol = symbol;
 		symbol = insymbol();
 	}
 	else {
 		error(WRONG_RELA_OP_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
-		return;
+		to_next_rpar();
+		return -1;
 	}
 	fprintf(output_file, "This is a relational operation!\n");
+	return 0;
 	//printf("This is a relational operation!\n");
 }
 
@@ -1176,6 +1196,10 @@ void rela_op() {
 ---循环语句处理
 ---循环语句结构为 do 语句 while()
 ---循环开始时设置label，并设置该label，再判断循环条件后生成是否跳到label处执行
+---会遇到的错误：
+---1.while 缺失；
+---2.while 后( 或 )缺失
+---处理方式：继续读取，直至下一个state（不包括{})
 */
 void loop_state() {
 	char label[100];
@@ -1199,25 +1223,19 @@ void loop_state() {
 			}
 			else {
 				error(RPAR_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+				to_next_state_semi_nolbras();
 				return;
 			}
 		}
 		else {
 			error(LPAR_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_semi_nolbras();
 			return;
 		}
 	}
 	else {
 		error(WHILESY_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+		to_next_state_semi_nolbras();
 		return;
 	}
 }
@@ -1228,6 +1246,11 @@ void loop_state() {
 ---情况表-->case 常量: 语句
 ---设置两个label，label指向switch语句的下一条语句，作为满足条件时跳出switch;
 ---my_label指向当前case语句的下一条语句，不满足条件时执行下一条case。
+---会遇到的错误：
+---1.switch 后( 或 )缺失；
+---处理方式：继续读取，直至下一个state
+---2.{ 或则 }缺失
+---处理方式：继续读取，直至下一个state（不包含{}）
 */
 void switch_state() {
 	char label[100];
@@ -1253,33 +1276,25 @@ void switch_state() {
 				}
 				else {
 					error(RBRAS_ERROR, line);
-					do {
-						symbol = insymbol();
-					} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+					to_next_state_semi_nolbras();
 					return;
 				}
 			}
 			else {
 				error(LBRAS_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+				to_next_state_semi_nolbras();
 				return;
 			}
 		}
 		else {
 			error(RPAR_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state();
 			return;
 		}
 	}
 	else {
 		error(LPAR_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+		to_next_state();
 		return;
 	}
 }
@@ -1298,6 +1313,13 @@ void situation_list(char label[], char for_compare[]) {
 /*
 ---情况子语句处理
 ---设置指向下一条语句的my_label，若符合条件，则直接跳出switch(){} 否则跳到my_label执行
+---会遇到的错误：
+---1.在整数中，+-号后面的不是无符号整数；
+---2.应该是case的地方不是case
+---3.case后不是常量
+---处理方式：报错后继续读入直至读入:case|state|colon；
+---4.case后缺失: 
+---处理方式：报错后继续读入直至读入:case|state；
 */
 void case_state(char label[], char for_compare[]) {
 	char compare_result[100];
@@ -1322,18 +1344,9 @@ void case_state(char label[], char for_compare[]) {
 		}
 		else if (symbol == PLUSSY || symbol == MINUSSY) {
 			symbol = insymbol();
-			if (symbol != DIGITSY) {
+			if (symbol != DIGITSY || trans_num == 0) {
 				error(AFTER_OP_DIGIT_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
-				return;
-			}
-			if (trans_num == 0) {
-				error(AFTER_OP_DIGIT_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+				to_next_state_case_colon();
 				return;
 			}
 			generate_mid_code(20, for_compare, TOKEN, compare_result);
@@ -1355,17 +1368,13 @@ void case_state(char label[], char for_compare[]) {
 		}
 		else {
 			error(CASE_CONST_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_case_colon();
 			return;
 		}
 		symbol = insymbol();
 		if (symbol != COLONSY) {
 			error(COLON_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_case();
 			return;
 		}
 		symbol = insymbol();
@@ -1379,9 +1388,7 @@ void case_state(char label[], char for_compare[]) {
 	}
 	else {
 		error(CASE_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+		to_next_state_case_colon();
 		return;
 	}
 }
@@ -1393,7 +1400,12 @@ void val_fun_call2() {
 	symbol = insymbol(); //假设标识符和(已经检查过
 	symbol = insymbol();
 	val_para_list();
-	type = get_func_type(my_func_name);
+	type = get_type_by_name(my_func_name, 2);
+	if (type == -1)
+	{
+		to_next_state_semi_nolbras();
+		return;
+	}
 	if (type != 1 && type != 2) {
 		error(FUNC_NO_DEF_ERROR, line);
 		do {
@@ -1426,29 +1438,31 @@ void val_fun_call2() {
 	//printf("This is a value function call!\n");
 }
 
+/*
+---有返回值函数调用
+---可能遇到的问题：
+---1.函数形参与实参不匹配
+---2.函数调用缺少 )
+---处理方式：报错后继续读入直至下一个state（不包含{}）
+*/
 void val_fun_call() {
 	int type;
 	char my_func_name[100];
+	int correct_para = 0;
+	int temp_index = var_index;
 	strcpy(my_func_name, TOKEN);
 	symbol = insymbol();  // ( 已匹配
 	symbol = insymbol();
 	val_para_list();//进入函数实参处理
-					/*？？？？？？？？？？？？？？？？？*/
-	type = get_func_type(my_func_name);
-	if (type != 1 && type != 2) {
-		error(FUNC_NO_DEF_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != RPARSY);
-		symbol = insymbol();
+	correct_para = is_correct_para(temp_index);
+	if (correct_para == -1)
+	{
+		to_next_state_semi_nolbras();
 		return;
 	}
-	/*？？？？？？？？？？？？？？？？？*/
 	if (symbol != RPARSY) {
 		error(RPAR_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+		to_next_state_semi_nolbras();
 		return;
 	}
 	generate_mid_code(14, my_func_name, CODE_EMPTY, CODE_EMPTY);//生成调用有返回值函数的中间代码
@@ -1459,32 +1473,30 @@ void val_fun_call() {
 
 /*
 ---无返回值函数调用处理
+---1.函数形参与实参不匹配
+---2.函数调用缺少 )
+---处理方式：报错后继续读入直至下一个state（不包含{}）
 */
 void void_fun_call() {
 	int type;
 	char my_func_name[100];
+	int correct_para;
+	int temp_index = var_index;
 	strcpy(my_func_name, TOKEN);
 	symbol = insymbol(); // ( 已匹配
 	symbol = insymbol();
 	val_para_list();//进入函数实参处理
+	correct_para = is_correct_para(temp_index);
+	if (correct_para == -1)
+	{
+		to_next_state_semi_nolbras();
+		return;
+	}
 	if (symbol != RPARSY) {
 		error(RPAR_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+		to_next_state_semi_nolbras();
 		return;
 	}
-	/*？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？*/
-	type = get_func_type(my_func_name);//核对核对函数实参和形参数目是否相同
-	if (type != 0) {
-		error(FUNC_NO_DEF_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != RPARSY);
-		symbol = insymbol();
-		return;
-	}
-	/*？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？*/
 	symbol = insymbol();
 	generate_mid_code(15, my_func_name, CODE_EMPTY, CODE_EMPTY);//生成调用名字为my_func_name的函数的中间代码
 	fprintf(output_file, "This is a void function call!\n");
@@ -1515,36 +1527,46 @@ void val_para_list() {
 
 /*
 ---赋值语句处理
+---会遇到的错误：
+---1.常量被赋值错误；
+---2.数组整体被赋值；
+---3.char被int赋值
+---4.数组访问缺少]
+---5.数组赋值缺失=
+---处理方式：报错后继续读入直至下一个state（不包含{}）
 */
 void assign_state() {
 	char src1[100];
 	char src2[100];
 	char result[100];
-	int nothing;
+	int var_type;
 	//char temp[50];
 	strcpy(result, TOKEN);
 	symbol = insymbol();
 	if (symbol == ASSIGNSY) {
-		symbol = insymbol();
-		expr();
-		nothing = index_in_table(result, 0); //这里要判断：1.常量赋值错误  2.char被int赋值 3.数组整体赋值
+		var_type = get_type_by_name(result, 0); 
+		if (var_type == -1)
+		{
+			to_next_state_semi_nolbras();
+			return;
+		}
+		//这里要判断：1.常量赋值错误  2.char被int赋值 3.数组整体赋值
 		if (const_flag) {
 			error(CONST_ASSIGNMENT_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_semi_nolbras();
 			return;
 		}
 		if (array_flag) {
 			error(ARRAY_ASSIGNMENT_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_semi_nolbras();
 			return;
 		}
-		if (nothing == 2 && factor_type == 1) {
+		if (var_type == 2 && factor_type == 1) {
 			error(CHAR_ASSIGNMENT_ERROR, line);
+			to_next_state_semi_nolbras();
 		}
+		symbol = insymbol();
+		expr();
 		strcpy(src1, now_result);
 		generate_mid_code(11, src1, CODE_EMPTY, result);//生成赋值语句
 		fprintf(output_file, "This is an assignment statement!\n");
@@ -1558,17 +1580,13 @@ void assign_state() {
 		strcpy(src2, now_result);
 		if (symbol != RBRASY) {
 			error(RBRA_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_semi_nolbras();
 			return;
 		}
 		symbol = insymbol();
 		if (symbol != ASSIGNSY) {
 			error(ASSIGN_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_semi_nolbras();
 			return;
 		}
 		symbol = insymbol();
@@ -1583,36 +1601,43 @@ void assign_state() {
 
 /*
 ---读语句处理
----读语句结构：scanf(ID,{ID});
+---读语句结构：scanf(ID);
 ---读入数据到ID
+---可能遇到的错误：
+---1.scanf后缺失(；
+---2.(后不是标识符；
+---3.读入的标识符是void类型；
+---4.)缺失；
+-------还要判断读入的标识符种类-------
+---处理方式：报错后继续读入直至下一个state（不包含{}）
 */
 void read_state() {
 	char var_name[100];
-	int get_index;
+	int var_type;
 	symbol = insymbol();
 	if (symbol != LPARSY) {
 		error(LPAR_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+		to_next_state_semi_nolbras();
 		return;
 	}
 	do {
 		symbol = insymbol();
 		if (symbol != IDSY) {
 			error(ID_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_semi_nolbras();
 			return;
 		}
 		strcpy(var_name, TOKEN);
-		get_index = index_in_table(var_name, 0);
-		factor_type = get_index;
+		var_type = get_type_by_name(var_name, 0);
+		if (var_type == -1)
+		{
+			to_next_state_semi_nolbras();
+			return;
+		}
 		if (var_flag == 0) {
 			error(READ_ARRAY_ERROR, line);
 		}
-		if (factor_type == 1) {
+		if (var_type == 1) {
 			generate_mid_code(27, CODE_INT, CODE_EMPTY, var_name);//将读入的值存入var_name中
 		}
 		else {
@@ -1622,9 +1647,7 @@ void read_state() {
 	} while (symbol == COMMASY);
 	if (symbol != RPARSY) {
 		error(RPAR_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+		to_next_state_semi_nolbras();
 		return;
 	}
 	symbol = insymbol();
@@ -1635,6 +1658,11 @@ void read_state() {
 /*
 ---写语句处理
 ---写语句结构：printf(字符串，expr)|printf(字符串)|printf(expr)
+---可能遇到的错误：
+---1.printf后缺失(；
+---2.)缺失；
+---3.读入的标识符是void类型；
+---处理方式：报错后继续读入直至下一个state（不包含{}）
 */
 void write_state() {
 	char src1[100];
@@ -1644,9 +1672,7 @@ void write_state() {
 	symbol = insymbol();
 	if (symbol != LPARSY) {
 		error(LPAR_ERROR, line);
-		do {
-			symbol = insymbol();
-		} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+		to_next_state_semi_nolbras();
 		return;
 	}
 	symbol = insymbol();
@@ -1660,9 +1686,7 @@ void write_state() {
 			expr();
 			if (symbol != RPARSY) {
 				error(RPAR_ERROR, line);
-				do {
-					symbol = insymbol();
-				} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+				to_next_state_semi_nolbras();
 				return;
 			}
 			strcpy(src2, now_result);
@@ -1686,20 +1710,15 @@ void write_state() {
 		}
 		else {
 			error(RPAR_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_semi_nolbras();
 			return;
 		}
-		//暂时没有else
 	}
 	else {
 		expr();
 		if (symbol != RPARSY) {
 			error(RPAR_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_semi_nolbras();
 			return;
 		}
 		strcpy(src2, now_result);
@@ -1718,6 +1737,11 @@ void write_state() {
 
 /*
 ---返回语句处理
+---可能遇到的错误：
+---1.对于无返回值函数返回值；
+---2.)缺失；
+---3.对于有返回值函数无返回值；
+---处理方式：报错后继续读入直至下一个state（不包含{}）
 */
 void return_state() {
 	char src[100];
@@ -1725,9 +1749,7 @@ void return_state() {
 	if (symbol == LPARSY) {
 		if (void_flag == 1) {
 			error(VOID_RT_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != SEMISY);
+			to_next_state_semi_nolbras();
 			return;
 		}
 		rt_flag = 1;
@@ -1736,9 +1758,7 @@ void return_state() {
 		strcpy(src, now_result);
 		if (symbol != RPARSY) {
 			error(RPAR_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_semi_nolbras();
 			return;
 		}
 		generate_mid_code(26, src, CODE_EMPTY, CODE_EMPTY);
@@ -1751,9 +1771,7 @@ void return_state() {
 	else {
 		if (val_flag == 1) {
 			error(VAL_RT_ERROR, line);
-			do {
-				symbol = insymbol();
-			} while (symbol != IFSY && symbol != DOSY && symbol != SWISY && symbol != LBRASSY && symbol != IDSY && symbol != SCANSY && symbol != PRISY && symbol != SEMISY && symbol != RTSY);
+			to_next_state_semi_nolbras(); 
 			return;
 		}
 		if (main_flag) {
@@ -1885,7 +1903,7 @@ void term() {
 ---作为乘法因子，即乘法运算的基本单元；
 ---每次需要乘法因子的类型；
 ---now_result中值对应如下：
----ID()-？？？
+---ID()-？？？？？？？？？？？？？？？？？？？？？？？
 ---ID[E]-存放该数组元素值的临时变量
 ---常量-常量值
 ---ID-id_record
@@ -1907,20 +1925,26 @@ void factor() {
 		pre_symbol = symbol;
 		strcpy(PRETOKEN, TOKEN);
 		symbol = insymbol();
-		if (symbol == LBRASY) {//若是左括号，则括号里内容同样为一表达式
+		if (symbol == LBRASY) {//若是左中括号，则括号里内容同样为一表达式
+			temp_type = get_type_by_name(id_record, 0);//检查变量是否存在的，并核对变量类型
+			if (temp_type == -1)
+			{
+				error(FUNC_NO_DEF_ERROR, line);
+				to_next_state_semi_nolbras();
+				return;
+			}
+			if (array_flag == 0) {
+				error(ID_NO_DEF_ERROR, line);
+				to_next_state_semi_nolbras();
+				return;
+			}
 			symbol = insymbol();
 			temp_type = factor_type;//暂存factor类型 ？？？
 			expr();
 			factor_type = temp_type;
 			if (symbol != RBRASY) {
 				error(RBRA_ERROR, line);
-				error_deal_ingrammerexpr();
-				return;
-			}
-			temp_type = index_in_table(id_record, 0);//检查变量是否存在的，并核对变量类型
-			if (array_flag == 0) {
-				error(ID_NO_DEF_ERROR, line);
-				error_deal_ingrammerexpr();
+				to_next_state_semi_nolbras();
 				return;
 			}
 			if (factor_type == 0) {
@@ -1937,20 +1961,31 @@ void factor() {
 			return;
 		}
 		else if (symbol == LPARSY) {
+			temp_type = get_type_by_name(id_record, 2);//检查变量是否存在的，并核对变量类型
+			if (temp_type == -1)
+			{
+				to_next_state_semi_nolbras();
+				return;
+			}
 			strcpy(TOKEN, PRETOKEN);
 			CHAR = pre_ch;
 			index_in_line = pre_line_index;
 			symbol = pre_symbol;
-			val_fun_call2();//函数调用，有无返回值？？？
+			val_fun_call();//函数调用，有无返回值？？？
 			fprintf(output_file, "This is a factor!\n");
 			//printf("This is a factor!\n");
 			return;
 		}
 		else {
 			if (factor_type == 0) {
-				factor_type = index_in_table(id_record, 0);
+				factor_type = get_type_by_name(id_record, 0);
 			}
-			temp_type = index_in_table(id_record, 0);
+			temp_type = get_type_by_name(id_record, 0);
+			if (temp_type == -1)
+			{
+				to_next_state_semi_nolbras();
+				return;
+			}
 			if (const_flag == 1) {
 				temp_type = get_const_value(id_record);
 				sprintf(now_result, "%d", temp_type);//若是const类型，now_result中存放常量值
@@ -1987,12 +2022,12 @@ void factor() {
 		symbol = insymbol();
 		if (symbol != DIGITSY) {
 			error(AFTER_OP_DIGIT_ERROR, line);
-			error_deal_ingrammerexpr();
+			to_next_state_semi_nolbras();
 			return;
 		}
 		if (trans_num == 0) {
 			error(AFTER_OP_DIGIT_ERROR, line);
-			error_deal_ingrammerexpr();
+			to_next_state_semi_nolbras();
 			return;
 		}
 		trans_num = sign*trans_num;
@@ -2020,7 +2055,7 @@ void factor() {
 		expr();
 		if (symbol != RPARSY) {
 			error(RPAR_ERROR, line);
-			error_deal_ingrammerexpr();
+			to_next_state_semi_nolbras();
 			return;
 		}
 		symbol = insymbol();
@@ -2030,7 +2065,7 @@ void factor() {
 	}
 	else {
 		error(FACTOR_ERROR, line);
-		error_deal_ingrammerexpr();
+		to_next_state_semi_nolbras();
 		return;
 	}
 }

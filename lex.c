@@ -16,7 +16,7 @@ int line = 0;//待编译文件的行数计数
 int index_in_line = 0;//当前处理字符串的下标计数，从1开始
 int line_lenth = 0;//当前处理字符串的长度
 
-				   //全局常量说明
+//全局常量说明
 const char CON[] = "const";
 const char INT[] = "int";
 const char _CHAR[] = "char";
@@ -32,7 +32,7 @@ const char PRINTF[] = "printf";
 const char RETURN[] = "return";
 const int imax = 2147483647;
 
-//获取下一次字符，每次读取512个字符
+//每次读取1行
 int get_ch()
 {
 	if (index_in_line == line_lenth) {
@@ -40,7 +40,7 @@ int get_ch()
 		if (fgets(read_line, 512, compile_file) != NULL) {
 			line_lenth = strlen(read_line);
 			index_in_line = 0;
-			return('\n');                                         //相当于都到了行末尾的回车
+			return('\n');//相当于都到了行末尾的回车
 		}
 		else
 			return(EOF);
