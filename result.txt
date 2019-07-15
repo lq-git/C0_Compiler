@@ -1,8 +1,9 @@
-This is a variable defination!
 This is a defination head!
 This is a parameter list!
 This is a variable defination!
 This is a variable declaration!
+This is a factor!
+This is a term!
 This is an integer!
 This is a factor!
 This is a term!
@@ -18,49 +19,14 @@ This is a statement list!
 This is a composite statement!
 This is a value function defination!
 This is a variable defination!
-This is a variable defination!
-This is a variable defination!
-This is a variable defination!
 This is a variable declaration!
 This is an integer!
 This is a factor!
 This is a term!
-This is an expression!
-This is an assignment statement!
-This is a statement!
 This is an integer!
 This is a factor!
 This is a term!
 This is an expression!
-This is an assignment statement!
-This is a statement!
-This is an integer!
-This is a factor!
-This is a term!
-This is an expression!
-This is an integer!
-This is a factor!
-This is a term!
-This is an expression!
-This is an assignment statement!
-This is a statement!
-This is a factor!
-This is a term!
-This is an expression!
-This is a relational operation!
-This is a factor!
-This is a term!
-This is an expression!
-This is a condition!
-This is an integer!
-This is a factor!
-This is a term!
-This is an expression!
-This is a factor!
-This is a term!
-This is an expression!
-This is an assignment statement!
-This is a statement!
 This is a value parameter list!
 This is a value function call!
 This is a factor!
@@ -68,63 +34,10 @@ This is a term!
 This is an expression!
 This is an assignment statement!
 This is a statement!
-This is a statement list!
-This is a statement!
-This is an if statement!
-This is a statement!
 This is a factor!
 This is a term!
 This is an expression!
-This is an integer!
-This is a constant!
-This is an integer!
-This is a factor!
-This is a term!
-This is an expression!
-This is an assignment statement!
-This is a statement!
-This is a case statement!
-This is an integer!
-This is a constant!
-This is an integer!
-This is a factor!
-This is a term!
-This is an expression!
-This is an assignment statement!
-This is a statement!
-This is a case statement!
-This is an integer!
-This is a constant!
-This is an integer!
-This is a factor!
-This is a term!
-This is an expression!
-This is an assignment statement!
-This is a statement!
-This is a case statement!
-This is a situation list!
-This is a switch statement!
-This is a statement!
-This is a factor!
-This is a term!
-This is an integer!
-This is a factor!
-This is a term!
-This is an expression!
-This is an assignment statement!
-This is a statement!
-This is a statement list!
-This is a statement!
-This is a factor!
-This is a term!
-This is an expression!
-This is a relational operation!
-This is an integer!
-This is a factor!
-This is a term!
-This is an expression!
-This is a condition!
-This is a loop statement!
+This is a write statement!
 This is a statement!
 This is a return statement!
 This is a statement!

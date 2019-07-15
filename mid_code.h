@@ -13,6 +13,8 @@ struct mid_code_list {
 	int code_num;
 };
 
+extern struct mid_code_list CODE_LIST;
+extern int var_num;
 //中间代码的操作函数声明
 extern void init_code_list();
 extern void generate_mid_code(int op, char src1[], char scr2[], char result[]);

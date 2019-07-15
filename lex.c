@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "global.h"
-#include "grammer.h"
+#include "grammar.h"
 #include "lex.h"
 #include "error.h"
 

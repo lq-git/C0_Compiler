@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include "global.h"
 #include "lex.h"
-#include "grammer.h"
+#include "grammar.h"
 #include "mid_code.h"
+#include "final_result.h"
+#include "optimizer.h"
 #include "error.h"
 
 //全局变量声明
@@ -22,13 +24,14 @@ int main()
 	output_file = fopen("result.txt", "w");
 	initial_table();
 	init_code_list();
+	init_func_list();//初始化 FUNC_BLOCKS.func_index
 	CHAR = get_ch();
 	symbol = insymbol();
 	program();
 	fprintf(output_file, "finish compiling\n");
 	print_mid_code();
-	/*generate_all_final_code();
-	whole_process();
+	generate_all_final_code();
+	/*whole_process();
 	print_mid_code2();
 	generate_all_final_code2();*/
 	fclose(compile_file);

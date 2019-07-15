@@ -143,17 +143,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="error.h" />
+    <ClInclude Include="final_result.h" />
     <ClInclude Include="global.h" />
-    <ClInclude Include="grammer.h" />
+    <ClInclude Include="grammar.h" />
     <ClInclude Include="lex.h" />
     <ClInclude Include="mid_code.h" />
+    <ClInclude Include="optimizer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="error.c" />
-    <ClCompile Include="grammer.c" />
+    <ClCompile Include="final_result.c" />
+    <ClCompile Include="grammar.c" />
     <ClCompile Include="lex.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="mid_code.c" />
+    <ClCompile Include="optimizer.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

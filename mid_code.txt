@@ -1,42 +1,14 @@
-INT num
 FUNC INT add
+PARA INT i
 INT t
-t = 4
+$VAR0 = i + 5
+t = $VAR0
 RT t
 FUNC VOID main
 INT num
-INT num1
-INT num2
-ARRAY INT b 5
-num1 = 4
-num2 = 5
-b[1] = 6
-$VAR0 = num1 > num2
-EQUZ $VAR0 LABEL0
-GET b[1] $VAR0
-num1 = $VAR0
-CALL VALUE add
-num2 = $VAR0
-SET LABEL0
-$S0 = num == 4
-EQUZ $S0 LABEL2
-num1 = 6
-GOTO LABEL1
-SET LABEL2
-$S1 = num == 5
-EQUZ $S1 LABEL3
-num1 = 5
-GOTO LABEL1
-SET LABEL3
-$S2 = num == 6
-EQUZ $S2 LABEL4
-num1 = 7
-GOTO LABEL1
-SET LABEL4
-SET LABEL1
-SET LABEL5
-$VAR0 = num + 1
-num = $VAR0
-$VAR1 = num > 6
-NEQZ $VAR1 LABEL5
+$VAR0 = 4 + 5
+PUSH $VAR0
+CALL VALUE add $VAR1
+num = $VAR1
+PRINT INT num
 END

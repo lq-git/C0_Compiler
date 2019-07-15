@@ -1,34 +1,14 @@
-int num;
-
-int add()
+int add(int i)
 {
     int t;
-    t=4;
+    t=i+5;
     return (t);
 }
 
 void main()
 {
     int num;
-    int num1;
-    int num2;
-    int b[5];
-    num1=4;
-    num2=5;
-    b[1]=6;
-    if(num1>num2)
-    {
-	    num1=b[1];
-    	num2=add();
-     }
-     switch (num)
-     {
-         case 4:num1=6;
-         case 5:num1=5;
-         case 6:num1=7;
-     }
-     do{
-         num=num+1;
-     }while(num>6)
-     return;
+    num=add(4+5);
+    printf(num);
+    return;
 }

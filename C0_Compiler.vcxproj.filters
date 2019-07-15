@@ -24,10 +24,16 @@
     <ClInclude Include="lex.h">
       <Filter>源文件</Filter>
     </ClInclude>
-    <ClInclude Include="grammer.h">
+    <ClInclude Include="mid_code.h">
       <Filter>源文件</Filter>
     </ClInclude>
-    <ClInclude Include="mid_code.h">
+    <ClInclude Include="grammar.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="final_result.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="optimizer.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -38,13 +44,19 @@
     <ClCompile Include="lex.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="grammer.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="mid_code.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="error.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="optimizer.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="final_result.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="grammar.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
